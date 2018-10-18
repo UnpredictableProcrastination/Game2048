@@ -929,7 +929,8 @@ MonoBehaviour:
   textBest: {fileID: 1949650326}
   textScore: {fileID: 1934341455}
   sensitivity: 5
-  number: {fileID: 1847377961879900, guid: 87887fa278a866a4ba4e942e102c0a29, type: 2}
+  tile: {fileID: 1847377961879900, guid: 87887fa278a866a4ba4e942e102c0a29, type: 2}
+  moveDuration: 4
 --- !u!224 &595695736 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 224714691228083348, guid: 6c059a608971864478cb0c29f6c7775b,

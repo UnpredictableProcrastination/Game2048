@@ -27,6 +27,9 @@ public class GameController : MonoBehaviour
     // Значение для сравнения
     public float epsilon = 0.2f;
 
+    // Палитра цветов
+    public Color[] palette;
+
     ////////////////////////////////////////////////////////
 
     // Модель игры
@@ -68,16 +71,17 @@ public class GameController : MonoBehaviour
     {
         String name = "b" + fx + "" + fy;
 
-        Vector2 target = GameObject.Find(name).transform.position;
+        Vector3 target = GameObject.Find(name).transform.position;
 
         map[x, y].GetComponent<TileController>().Target = target;
-
+        
         var tile = map[x, y];
         var oldTile = map[fx, fy];
 
         onTileArrived += () =>
         {
             SetNumber(tile, model.GetMap(fx, fy));
+            
             Destroy(oldTile);
             tile.GetComponent<TileController>().RunMergeAnimation();
         };
@@ -90,8 +94,8 @@ public class GameController : MonoBehaviour
     {
         //Debug.Log(x + ":" + y + "|" + fx + ":" + fy);
         String name = "b" + fx + "" + fy;
-
-        Vector2 target = GameObject.Find(name).transform.position;
+         
+        Vector3 target = GameObject.Find(name).transform.position;
         
         map[x, y].GetComponent<TileController>().Target = target;
 
@@ -109,16 +113,25 @@ public class GameController : MonoBehaviour
             Destroy(map[x, y]);
         }
 
-        Vector3 position = GameObject.Find("b" + x + "" + y).transform.position;
-
         onTileArrived += () =>
         {
-            map[x, y] = Instantiate(tile, position, Quaternion.identity, root);
+            Vector3 position = GameObject.Find("b" + x + "" + y).transform.position;
+            //map[x, y] = Instantiate(tile, position, Quaternion.identity, root);
+            map[x, y] = Instantiate(tile, root);
+
             SetNumber(map[x, y], model.GetMap(x, y));
+            map[x, y].transform.position = position;
+            
+            if (Math.Abs(map[x, y].transform.position.x) < 0.001f)
+            {
+                throw new Exception();
+            }
+            //Debug.LogFormat("CREATED '{0}' [{1}:{2}]\n{3}\n{4}",model.GetMap(x,y),x,y,position,map[x,y].transform.position);
+            
         };
     }
 
-    void Update ()
+    void Update()
     {
         bool moving = false;
         for (int x = 0; x < model.size; x++)
@@ -128,23 +141,29 @@ public class GameController : MonoBehaviour
                 var element = map[x, y];
                 if (element != null)
                 {
-                    var target = element.GetComponent<TileController>().Target;
-                    element.transform.position = 
-                        Vector3.Lerp(element.transform.position, target, 1 / moveDuration);
+                    //var target = element.GetComponent<TileController>().Target;
+                    //element.transform.position = 
+                    //    Vector3.Lerp(element.transform.position, target, 1 / moveDuration);
 
-                    if (Math.Abs(element.transform.position.x - target.x) > epsilon
-                        || Math.Abs(element.transform.position.y - target.y) > epsilon)
+                    var contr = element.GetComponent<TileController>();
+
+                    if (contr.IsMoving)
                     {
                         moving = true;
+                    }
+
+                    if (element.transform.position.x == 0)
+                    {
+
                     }
                 }
             }
         }
-        if(!moving)
+        if (!moving)
         {
             // Движение закончено, запускаем делегат
             onTileArrived();
-            
+
             // Присваиваем ему пустую лямбду, чтобы не возиться с проверками на null
             onTileArrived = () => { };
         }
@@ -160,7 +179,7 @@ public class GameController : MonoBehaviour
                 Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
 
                 // Если палец недостаточно переместился, выходим
-                if(touchDeltaPosition.magnitude < sensitivity)
+                if (touchDeltaPosition.magnitude < sensitivity)
                 {
                     return;
                 }
@@ -206,12 +225,23 @@ public class GameController : MonoBehaviour
                 // Проверяем конец игры
                 if (model.IsGameOver())
                 {
+                    System.Threading.Thread.Sleep(500);
+
+                    for (int x = 0; x < model.size; x++)
+                    {
+                        for (int y = 0; y < model.size; y++)
+                        {
+                            var element = map[x, y];
+                            if (element != null)
+                            {
+                                Destroy(element);
+                                map[x, y] = null;
+                            }
+                        }
+                    }
                     NewGame();
                     // ЧОТА СДЕЛАТЬ
                 }
-
-                // Показываем всю картину ???? КАКУЮ КАРТИНУ?
-                Show();
             }
         }
         else
@@ -219,14 +249,17 @@ public class GameController : MonoBehaviour
             // Для игры с помощью клавиатуры
             if (Input.anyKeyDown && !moved)
             {
-                Debug.LogWarning("--------------------------");
-                moved = true;
                 Finish();
+                System.Threading.Thread.Sleep(10);
+                moved = true;
 
                 // Вызываем делегат, чтобы закончить висящие действия, 
-                // поскольку прошлый ход закончен
+                // поскольку прошлый ход может быть не закончен
                 onTileArrived();
                 onTileArrived = () => { };
+
+
+
 
                 if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
@@ -257,6 +290,7 @@ public class GameController : MonoBehaviour
                         }
                     }
                 }
+
             }
             else
             {
@@ -265,7 +299,7 @@ public class GameController : MonoBehaviour
             }
         }
 
-        
+
         // Выводим очки
         int score = model.Score;
 
@@ -277,6 +311,16 @@ public class GameController : MonoBehaviour
         }
     }
     
+    int GetColorId(int number)
+    {
+        var id = Math.Log(number, 2) - 1;
+
+        return (int)id;
+    }
+
+    /// <summary>
+    /// Завершает всю анимацию
+    /// </summary>
     void Finish()
     {
         for (int x = 0; x < model.size; x++)
@@ -286,42 +330,13 @@ public class GameController : MonoBehaviour
                 var element = map[x, y];
                 if (element != null)
                 {
-                    element.GetComponent<TileController>().Finish();
+                    var controller = element.GetComponent<TileController>();
+                    if (controller.IsMoving)
+                    {
+                        controller.Finish();
+                    }
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Выводит значения на поле
-    /// </summary>
-    void Show()
-    {
-        for (int x = 0; x < model.size; x++)
-        {
-            for (int y = 0; y < model.size; y++)
-            {
-                ShowButtonText("b" + x + y, model.GetMap(x, y));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Записывает значение в определенную клетку
-    /// </summary>
-    /// <param name="name">Имя клетки</param>
-    /// <param name="number">Числовое значение</param>
-    private void ShowButtonText(string name, int number)
-    {
-        var button = GameObject.Find(name);
-        var text = button.GetComponentInChildren<Text>();
-        if(number != 0)
-        {
-            text.text = number.ToString();
-        }
-        else
-        {
-            text.text = " ";
         }
     }
 
@@ -331,7 +346,6 @@ public class GameController : MonoBehaviour
     public void NewGame()
     {
         model.Start();
-        Show();
     }
 
     /// <summary>
@@ -343,6 +357,9 @@ public class GameController : MonoBehaviour
     {
         var text = obj.GetComponentInChildren<Text>();
         text.text = number.ToString();
+        
+        int id = GetColorId(number);
+        obj.GetComponent<Image>().color = palette[id];
     }
 
     public void RandomTurn()

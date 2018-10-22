@@ -117,8 +117,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e1682fd6af31440ba031c80d9b25b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  finishTime: 5
   scaleTime: 0.7
+  moveTime: 3
   maxMergeScale: 1.1
 --- !u!222 &222686072517942992
 CanvasRenderer:

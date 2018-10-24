@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using Game2048;
 using System;
 
@@ -29,7 +30,7 @@ public class GameController : MonoBehaviour
 
     // Палитра цветов
     public Color[] palette;
-
+    
     ////////////////////////////////////////////////////////
 
     // Модель игры
@@ -50,10 +51,13 @@ public class GameController : MonoBehaviour
     // Transform элемента, на который помещаются плитки
     private Transform root;
 
+    private const string settingsSceneName = "Settings";
+    
     ////////////////////////////////////////////////////////
 
     void Start ()
     {
+        
         highscore = 0;
         onTileArrived = () => { };
         root = GameObject.Find("ROOT").transform;
@@ -129,6 +133,22 @@ public class GameController : MonoBehaviour
             //Debug.LogFormat("CREATED '{0}' [{1}:{2}]\n{3}\n{4}",model.GetMap(x,y),x,y,position,map[x,y].transform.position);
             
         };
+    }
+
+    /// <summary>
+    /// Открывает окно настроек
+    /// </summary>
+    public void OpenSettings()
+    {
+        SceneManager.LoadScene(settingsSceneName);
+    }
+
+    /// <summary>
+    /// Закрывает окно настроек
+    /// </summary>
+    public void CloseSettings()
+    {
+        SceneManager.UnloadSceneAsync(settingsSceneName);
     }
 
     void Update()

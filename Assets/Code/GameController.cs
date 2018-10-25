@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Game2048;
 using System;
+using System.IO;
+using System.Text;
 
 public class GameController : MonoBehaviour
 {
@@ -17,7 +19,7 @@ public class GameController : MonoBehaviour
     public Text textScore;
 
     // Чувствительность
-    public float sensitivity = 5;
+    public float sensitivity = 3;
 
     // Префаб плитки
     public GameObject tile;
@@ -71,15 +73,58 @@ public class GameController : MonoBehaviour
     // Для определения первого кадра после проигрыша
     private bool firstGameOverFrame = true;
 
+    // Файл настроек
+    private string settingsFilePath;
+    private readonly string settingsFileName = "/settings.txt";
+
+    // Файл незавершенной сессии
+    private string sessionFilePath;
+    private readonly String sessionFileName = "/session";
+
+    // Файл рекордов
+    private string highscoreFilePath;
+    private readonly String highscoreFileName = "/record";
+    
+
     ////////////////////////////////////////////////////////
 
     void Start ()
     {
+        settingsFilePath = Application.persistentDataPath + settingsFileName;
+        sessionFilePath = Application.persistentDataPath + sessionFileName;
+        highscoreFilePath = Application.persistentDataPath + highscoreFileName;
+
+        if (File.Exists(settingsFilePath))
+        {
+            
+        }
+        else
+        {
+            File.Create(settingsFilePath);
+        }
         
-        highscore = 0;
+        if (File.Exists(highscoreFilePath))
+        {
+            highscore = ReadHighscore();
+            textBest.text = highscore.ToString();
+        }
+        else
+        {
+            File.Create(highscoreFilePath);
+        }
+
+        int score = -1;
+        int[,] data = null;
+
+        if (File.Exists(sessionFilePath))
+        {
+            score = ReadSessionData(out data);
+        }
+
         onTileArrived = () => { };
         root = GameObject.Find("ROOT").transform;
 
+         
         map = new GameObject[4, 4];
         model = new Model(4);
         model.OnMoved += Model_OnMoved;
@@ -87,6 +132,65 @@ public class GameController : MonoBehaviour
         model.OnItemCreated += Model_OnItemCreated;
         
         model.Start();
+
+        if(data != null && 4 == data.GetLength(0))
+        {
+            onTileArrived = () => { };
+            model.Score = score;
+
+            for (int y = 0; y < model.size; y++)
+            {
+                for (int x = 0; x < model.size; x++)
+                {
+                    model.SetNumber(x, y, data[x, y], true);
+                }
+            }
+        }
+    }
+
+    private int ReadHighscore()
+    {
+        using (StreamReader reader = new StreamReader(highscoreFilePath))
+        {
+            string[] data = reader.ReadToEnd().Split('\n');
+            int firstPart;
+
+            if(!Int32.TryParse(data[0], out firstPart))
+            {
+                return -1;
+            }
+
+            int secondPart = 0;
+            for(int i = 0; i < data[1].Length; i++)
+            {
+                int digit = data[1][i];
+                secondPart += digit * (int) Math.Pow(10, data[1].Length - i - 1);
+            }
+
+            if(firstPart == secondPart)
+            {
+                return firstPart;
+            }
+            else
+            {
+                throw new MissingComponentException();
+            }
+        }
+    }
+
+    private void WriteHigscore()
+    {
+        using (StreamWriter writer = new StreamWriter(highscoreFilePath))
+        {
+            writer.WriteLine(highscore);
+            string score = highscore.ToString();
+            char[] buffer = new char[score.Length];
+            for(int i = 0; i < score.Length; i++)
+            {
+                buffer[i] = (char) Int32.Parse(score[i].ToString());
+            }
+            writer.Write(buffer);
+        }
     }
 
     private void Model_OnJoined(int x, int y, int fx, int fy)
@@ -309,7 +413,7 @@ public class GameController : MonoBehaviour
                         model.Down();
                     }
                 }
-                
+                WriteSessionData();
             }
         }
         else
@@ -325,9 +429,7 @@ public class GameController : MonoBehaviour
                 // поскольку прошлый ход может быть не закончен
                 onTileArrived();
                 onTileArrived = () => { };
-
-
-
+                
 
                 if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
@@ -358,7 +460,7 @@ public class GameController : MonoBehaviour
                         }
                     }
                 }
-
+                WriteSessionData();
             }
             else
             {
@@ -376,6 +478,7 @@ public class GameController : MonoBehaviour
         {
             highscore = score;
             textBest.text = score.ToString();
+            WriteHigscore();
         }
     }
     
@@ -435,7 +538,14 @@ public class GameController : MonoBehaviour
         }
         
         int id = GetColorId(number);
-        obj.GetComponent<Image>().color = palette[id];
+        if (id >= 0 && id < palette.Length)
+        {
+            obj.GetComponent<Image>().color = palette[id];
+        }
+        else
+        {
+            Debug.LogError(id);
+        }
     }
 
     public void RandomTurn()
@@ -470,6 +580,76 @@ public class GameController : MonoBehaviour
                 model.Left();
                 
             }
+        }
+    }
+
+    private void WriteSessionData()
+    {
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(sessionFilePath))
+            {
+                for (int y = 0; y < model.size; y++)
+                {
+                    StringBuilder builder = new StringBuilder();
+                    for (int x = 0; x < model.size; x++)
+                    {
+                        int mapValue = model.GetMap(x, y);
+                        if(mapValue != 0)
+                        {
+                            int value = (int)Math.Log(mapValue, 2);
+                            builder.Append(value);
+                        }
+                        else
+                        {
+                            builder.Append(0);
+                        }
+
+                        if(x < model.size - 1)
+                        {
+                            builder.Append(",");
+                        }
+                    }
+                    writer.WriteLine(builder);
+                }
+                
+                writer.Write(model.Score);
+            }
+        }
+        catch (IOException exc)
+        {
+            Debug.LogError("Can not save game session!\n" + exc.Message);
+        }
+    }
+
+    private int ReadSessionData(out int[,] map)
+    {
+        using (StreamReader reader = new StreamReader(sessionFilePath))
+        {
+            string data = reader.ReadToEnd();
+            string[] lines = data.Split('\n');
+
+            map = new int[lines.Length - 1, lines.Length - 1];
+
+            for (int y = 0; y < lines.Length - 1; y++)
+            {
+                var line = lines[y].Split(',');
+
+                for(int x = 0; x < line.Length; x++)
+                {
+                    int value = Int32.Parse(line[x]);
+                    if(value > 0)
+                    {
+                        map[x, y] = (int)Math.Pow(2, value);
+                    }
+                    else
+                    {
+                        map[x, y] = 0;
+                    }
+                }
+            }
+
+            return Int32.Parse(lines[lines.Length - 1]);
         }
     }
 }

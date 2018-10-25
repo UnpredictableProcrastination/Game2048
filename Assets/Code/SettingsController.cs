@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.UI;
 
 public class SettingsController : MonoBehaviour
 {
-    public readonly String SceneName = "Settings";
+    //private readonly String SceneName = "Settings";
+    private readonly String mainSceneName = "MainWindow";
+    private readonly String settingsFileName = "/settings.txt";
 
-    public void Exit()
+    private string settingsFilePath;
+
+    private void Start()
     {
-        SceneManager.UnloadSceneAsync(SceneName);
+        settingsFilePath = Application.persistentDataPath + settingsFileName;
     }
 
     void Update()
@@ -19,5 +24,18 @@ public class SettingsController : MonoBehaviour
         {
             Exit();
         }
+    }
+
+    public void Exit()
+    {
+        SceneManager.LoadScene(mainSceneName);
+        //SceneManager.UnloadSceneAsync(SceneName);
+    }
+
+    public void UpdateSensitivity()
+    {
+        var slider = GameObject.Find("SensSlider").GetComponentInChildren<Slider>();
+        
+        Debug.Log(slider.value);
     }
 }

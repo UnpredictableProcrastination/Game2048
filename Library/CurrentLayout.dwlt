@@ -109,7 +109,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 492}
   m_MaxSize: {x: 14004, y: 14042}
   vertical: 0
-  controlID: 9
+  controlID: 29
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -315,7 +315,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: f01bfcfffe2cfcff102ffcff4a4bfcff044cfcff544cfcff16c4fcff98cafcff68cdfcffc8d9fcffb0e8fcff9af9fcfffefdfcfff602fdffac03fdff5e04fdff9c05fdffa405fdffe0a3ffff6ca6ffff9cd6ffff06dafffffadeffff32effffffaefffff52f1ffff62f2ffffe0fbffff00000000d02f000064320000363b0000403b00002a3c0000823c00008c3c0000643d00006e3d0000763d0000
+    m_ExpandedIDs: 0842f8ff6c42f8ffce42f8ff0a44f8ff0e44f8ff10b8fbfff4bbfbff8e57fcff8cc9ffffe0fbffff00000000142d0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -370,9 +370,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0.4675105, y: 0.068810016, z: 265.77032}
+    m_Target: {x: -0.8288396, y: -0.008437458, z: 270.28033}
     speed: 2
-    m_Value: {x: 0.4675105, y: 0.068810016, z: 265.77032}
+    m_Value: {x: -0.8288396, y: -0.008437458, z: 270.28033}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -404,9 +404,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 11.487352
+    m_Target: 11.668404
     speed: 2
-    m_Value: 11.487352
+    m_Value: 11.668404
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -476,20 +476,20 @@ MonoBehaviour:
       y: 17
       width: 815
       height: 309
-    m_Scale: {x: 0.38625, y: 0.38625}
-    m_Translation: {x: 407.5, y: 154.5}
+    m_Scale: {x: 0.47956657, y: 0.4795666}
+    m_Translation: {x: 407.5, y: 154.49992}
     m_MarginLeft: 0
     m_MarginRight: 0
     m_MarginTop: 0
     m_MarginBottom: 0
     m_LastShownAreaInsideMargins:
       serializedVersion: 2
-      x: -1055.0162
-      y: -400
-      width: 2110.0325
-      height: 800
+      x: -849.7256
+      y: -322.16574
+      width: 1699.4512
+      height: 644.3318
     m_MinimalGUI: 1
-  m_defaultScale: 1
+  m_defaultScale: 0.38625
   m_TargetTexture: {fileID: 0}
   m_CurrentColorSpace: 0
   m_LastWindowPixelSize: {x: 815, y: 326}
@@ -559,20 +559,20 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scenes
+    - Assets
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scenes
+  - Assets
   m_LastFoldersGridSize: -1
   m_LastProjectPath: E:\_______PROJECTS\Game2048
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 142a0000
-    m_LastClickedID: 10772
-    m_ExpandedIDs: 00000000ea29000000ca9a3b
+    m_SelectedIDs: ec290000
+    m_LastClickedID: 10732
+    m_ExpandedIDs: 00000000ec29000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -600,7 +600,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000ea290000
+    m_ExpandedIDs: 00000000ec290000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -627,7 +627,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 1
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: c6230000b2edfeffe02b000000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0

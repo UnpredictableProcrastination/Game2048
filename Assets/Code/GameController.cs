@@ -28,9 +28,15 @@ public class GameController : MonoBehaviour
     // Значение для сравнения
     public float epsilon = 0.2f;
 
-    // Палитра цветов
+    // Палитра цветов фона
     public Color[] palette;
-    
+
+    // Цвета текста
+    public Color[] textPalette;
+
+    // Количество кадров задержки после проигрыша
+    public int gameOverDelay = 40;
+
     ////////////////////////////////////////////////////////
 
     // Модель игры
@@ -51,8 +57,20 @@ public class GameController : MonoBehaviour
     // Transform элемента, на который помещаются плитки
     private Transform root;
 
+    // Имя сцены настроек
     private const string settingsSceneName = "Settings";
-    
+
+    // Переменные для удаления элементов по цепочке
+    private int pointerX = 0;
+    private int pointerY = 0;
+    private int deltaY = 1;
+
+    // Счетчик кадров для задержки после определения проигрыша
+    private int missedFrames = 0;
+
+    // Для определения первого кадра после проигрыша
+    private bool firstGameOverFrame = true;
+
     ////////////////////////////////////////////////////////
 
     void Start ()
@@ -153,6 +171,56 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
+        // Проверяем конец игры
+        if (model.IsGameOver())
+        {
+            if(firstGameOverFrame)
+            {
+                onTileArrived();
+                onTileArrived = () => { };
+                firstGameOverFrame = false;
+            }
+
+            if (missedFrames < gameOverDelay)
+            {
+                missedFrames++;
+                return;
+            }
+
+            //if (missedFrames < gameOverDelay + 5)
+            //{
+            //    missedFrames++;
+            //    return;
+            //}
+
+            if (pointerY >= map.GetLength(0) || pointerY < 0)
+            {
+                deltaY = -deltaY;
+                pointerY += deltaY;
+                
+                pointerX++;
+                if(pointerX >= map.GetLength(1))
+                {
+                    pointerX = 0;
+                    pointerY = 0;
+                    deltaY = 1;
+                    NewGame();
+                    firstGameOverFrame = true;
+                    missedFrames = 0;
+                    return;
+                }
+            }
+            var element = map[pointerX, pointerY];
+            Destroy(element);
+            map[pointerX, pointerY] = null;
+            pointerY += deltaY;
+
+            //missedFrames = gameOverDelay;
+            return;
+
+            // ЧОТА СДЕЛАТЬ
+        }
+
         bool moving = false;
         for (int x = 0; x < model.size; x++)
         {
@@ -241,27 +309,7 @@ public class GameController : MonoBehaviour
                         model.Down();
                     }
                 }
-
-                // Проверяем конец игры
-                if (model.IsGameOver())
-                {
-                    System.Threading.Thread.Sleep(500);
-
-                    for (int x = 0; x < model.size; x++)
-                    {
-                        for (int y = 0; y < model.size; y++)
-                        {
-                            var element = map[x, y];
-                            if (element != null)
-                            {
-                                Destroy(element);
-                                map[x, y] = null;
-                            }
-                        }
-                    }
-                    NewGame();
-                    // ЧОТА СДЕЛАТЬ
-                }
+                
             }
         }
         else
@@ -377,6 +425,14 @@ public class GameController : MonoBehaviour
     {
         var text = obj.GetComponentInChildren<Text>();
         text.text = number.ToString();
+        if(number >= 8)
+        {
+            text.color = textPalette[1];
+        }
+        else
+        {
+            text.color = textPalette[0];
+        }
         
         int id = GetColorId(number);
         obj.GetComponent<Image>().color = palette[id];

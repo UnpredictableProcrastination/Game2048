@@ -165,4 +165,5 @@ e04611b8715e6833d2bd7010fc6be10b Unity.TextMeshPro.dll:TMPro.TMP_StyleSheet
 9318334b30e9f195f573b2ce00154b95 Unity.TextMeshPro.dll:TMPro.TMP_ColorGradient
 93307bd34e39d73fd24e00ec39c25a91 Unity.TextMeshPro.dll:TMPro.TMP_SubMesh
 4b86503ba20e49e2e1b8b9dd1500f18b Assembly-CSharp.dll:.TileController
-dd2bcc36af9271fa81cfeac0083bc3f8 Assembly-CSharp.dll:.GameController
+486cd95c82d8305219c352c06b776e1f Assembly-CSharp.dll:.SettingsController
+1eaf1355dbb9a4aee5b55fcc070a8677 Assembly-CSharp.dll:.GameController

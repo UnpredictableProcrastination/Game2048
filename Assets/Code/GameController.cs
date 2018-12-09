@@ -39,6 +39,9 @@ public class GameController : MonoBehaviour
     // Количество кадров задержки после проигрыша
     public int gameOverDelay = 40;
 
+    // Шаблон диалога конца игры
+    public GameObject dialogueTemplate;
+
     ////////////////////////////////////////////////////////
 
     // Модель игры
@@ -60,7 +63,7 @@ public class GameController : MonoBehaviour
     private Transform root;
 
     // Имя сцены настроек
-    private const string settingsSceneName = "Settings";
+    private readonly string settingsSceneName = "Settings";
 
     // Переменные для удаления элементов по цепочке
     private int pointerX = 0;
@@ -73,6 +76,12 @@ public class GameController : MonoBehaviour
     // Для определения первого кадра после проигрыша
     private bool firstGameOverFrame = true;
 
+    // Для создания единственного окна диалога
+    private bool dialogueCreated = false;
+
+    // Можно ли начинать новую игру
+    private bool newGameConfirmed = false;
+
     // Файл настроек
     private string settingsFilePath;
     private readonly string settingsFileName = "/settings.txt";
@@ -84,8 +93,10 @@ public class GameController : MonoBehaviour
     // Файл рекордов
     private string highscoreFilePath;
     private readonly String highscoreFileName = "/record";
-    
 
+    // Диалог конца игры
+    private GameObject dialogue;
+    
     ////////////////////////////////////////////////////////
 
     void Start ()
@@ -94,9 +105,11 @@ public class GameController : MonoBehaviour
         sessionFilePath = Application.persistentDataPath + sessionFileName;
         highscoreFilePath = Application.persistentDataPath + highscoreFileName;
 
+
+
         if (File.Exists(settingsFilePath))
         {
-            
+            UploadSettings();
         }
         else
         {
@@ -148,6 +161,23 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void UploadSettings()
+    {
+        using (StreamReader reader = new StreamReader(settingsFilePath))
+        {
+            float sens;
+            string rawSens = reader.ReadLine();
+            if (float.TryParse(rawSens, out sens))
+            {
+                sensitivity = sens;
+            }
+            else
+            {
+                Debug.LogWarning("Can not parse sensitivity value!\n" + rawSens + " is not looks like a float.");
+            }
+        }
+    }
+
     private int ReadHighscore()
     {
         using (StreamReader reader = new StreamReader(highscoreFilePath))
@@ -173,7 +203,7 @@ public class GameController : MonoBehaviour
             }
             else
             {
-                throw new MissingComponentException();
+                throw new MissingComponentException(); // Сломает игру
             }
         }
     }
@@ -278,51 +308,31 @@ public class GameController : MonoBehaviour
         // Проверяем конец игры
         if (model.IsGameOver())
         {
-            if(firstGameOverFrame)
+            if (missedFrames > gameOverDelay)
             {
-                onTileArrived();
-                onTileArrived = () => { };
-                firstGameOverFrame = false;
-            }
+                if (!dialogueCreated)
+                {
+                    onTileArrived();
+                    onTileArrived = () => { };
+                    dialogue = Instantiate(dialogueTemplate, root);
 
-            if (missedFrames < gameOverDelay)
-            {
-                missedFrames++;
+                    var button = dialogue.GetComponentInChildren<Button>();
+
+                    button.onClick.AddListener(() => newGameConfirmed = true);
+                    dialogueCreated = true;
+                }
+
+                if (newGameConfirmed)
+                {
+                    AnotherStepToRestart();
+                }
+
                 return;
             }
-
-            //if (missedFrames < gameOverDelay + 5)
-            //{
-            //    missedFrames++;
-            //    return;
-            //}
-
-            if (pointerY >= map.GetLength(0) || pointerY < 0)
+            else
             {
-                deltaY = -deltaY;
-                pointerY += deltaY;
-                
-                pointerX++;
-                if(pointerX >= map.GetLength(1))
-                {
-                    pointerX = 0;
-                    pointerY = 0;
-                    deltaY = 1;
-                    NewGame();
-                    firstGameOverFrame = true;
-                    missedFrames = 0;
-                    return;
-                }
+                missedFrames++;
             }
-            var element = map[pointerX, pointerY];
-            Destroy(element);
-            map[pointerX, pointerY] = null;
-            pointerY += deltaY;
-
-            //missedFrames = gameOverDelay;
-            return;
-
-            // ЧОТА СДЕЛАТЬ
         }
 
         bool moving = false;
@@ -370,8 +380,11 @@ public class GameController : MonoBehaviour
                 // Получаем вектор перемещения пальца
                 Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
 
+                // Вычисляем необходимое изменение на основе чувствительности
+                float requiredDelta = 30 / (sensitivity * sensitivity);
+
                 // Если палец недостаточно переместился, выходим
-                if (touchDeltaPosition.magnitude < sensitivity)
+                if (touchDeltaPosition.magnitude < requiredDelta)
                 {
                     return;
                 }
@@ -481,7 +494,52 @@ public class GameController : MonoBehaviour
             WriteHigscore();
         }
     }
-    
+
+    private void AnotherStepToRestart()
+    {
+        if (firstGameOverFrame)
+        {
+            Destroy(dialogue);
+            onTileArrived();
+            onTileArrived = () => { };
+            firstGameOverFrame = false;
+        }
+        
+        //if (missedFrames < gameOverDelay + 5)
+        //{
+        //    missedFrames++;
+        //    return;
+        //}
+
+        if (pointerY >= map.GetLength(0) || pointerY < 0)
+        {
+            deltaY = -deltaY;
+            pointerY += deltaY;
+
+            pointerX++;
+            if (pointerX >= map.GetLength(1))
+            {
+                pointerX = 0;
+                pointerY = 0;
+                deltaY = 1;
+                NewGame();
+                
+                newGameConfirmed = false;
+                dialogueCreated = false;
+                firstGameOverFrame = true;
+                missedFrames = 0;
+                return;
+            }
+        }
+        var element = map[pointerX, pointerY];
+        Destroy(element);
+        map[pointerX, pointerY] = null;
+        pointerY += deltaY;
+
+        //missedFrames = gameOverDelay;
+        return;
+    }
+
     int GetColorId(int number)
     {
         var id = Math.Log(number, 2) - 1;

@@ -836,7 +836,7 @@ CanvasRenderer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 574803914}
-  m_CullTransparentMesh: 0
+  m_CullTransparentMesh: 1
 --- !u!1 &574887540
 GameObject:
   m_ObjectHideFlags: 0
@@ -952,6 +952,9 @@ MonoBehaviour:
   textPalette:
   - {r: 0.46666667, g: 0.43137255, b: 0.39607844, a: 1}
   - {r: 0.9764706, g: 0.9647059, b: 0.9490196, a: 1}
+  gameOverDelay: 40
+  dialogueTemplate: {fileID: 1337697028673708, guid: 8087636fa0c4ced4e99e0944030e6394,
+    type: 2}
 --- !u!224 &595695736 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 224714691228083348, guid: 6c059a608971864478cb0c29f6c7775b,
@@ -1192,7 +1195,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1578886511}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2385,8 +2388,8 @@ RectTransform:
   m_Children:
   - {fileID: 574803915}
   - {fileID: 1982118666}
-  - {fileID: 796729159}
   - {fileID: 940713527}
+  - {fileID: 796729159}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2440,7 +2443,7 @@ Prefab:
     - target: {fileID: 224402506052736798, guid: dc7ed5b265fad624a862e60b5dc76477,
         type: 2}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 224402506052736798, guid: dc7ed5b265fad624a862e60b5dc76477,
         type: 2}
